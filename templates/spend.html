@@ -1,0 +1,11 @@
+<p>Your address: {{.Address}}</p>
+<p>Current block: {{.CurrentBlock}}</p>
+<p>Current balance is: {{.Balance}}</p>
+
+<form action="/spend/{{.PrivKey}}" method="POST">
+	<p>Send to address:</p>
+	<p><input type="text" name="to"></p>
+	<p>Amount:</p>
+	<p><input type="text" name="amount"></p>
+	<p><button type="submit">Send</button></p>
+</form>
