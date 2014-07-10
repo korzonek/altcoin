@@ -14,13 +14,12 @@ import (
 )
 
 // Run spawns worker processes (multi-CPU mining) and coordinates the effort.
-func Run(reward_address *btcec.PublicKey, peers []string, hashes_till_check int, db *types.DB) {
+func Run(reward_address *btcec.PublicKey, peers []string, db *types.DB) {
 	obj := &runner{
-		reward_address:    reward_address,
-		peers:             peers,
-		hashes_till_check: hashes_till_check,
-		db:                db,
-		submit_queue:      make(chan *types.Block),
+		reward_address: reward_address,
+		peers:          peers,
+		db:             db,
+		submit_queue:   make(chan *types.Block),
 	}
 
 	// num_cores = multiprocessing.cpu_count()
@@ -44,7 +43,7 @@ func Run(reward_address *btcec.PublicKey, peers []string, hashes_till_check int,
 			candidate_block = obj.make_block(prev_block, db.Txs)
 		}
 
-		work := Work{candidate_block, hashes_till_check}
+		work := Work{candidate_block, config.Get().HashesPerCheck}
 		for _, w := range obj.workers {
 			w.WorkQueue <- work
 		}
@@ -62,12 +61,11 @@ func Run(reward_address *btcec.PublicKey, peers []string, hashes_till_check int,
 }
 
 type runner struct {
-	reward_address    *btcec.PublicKey
-	peers             []string
-	hashes_till_check int
-	db                *types.DB
-	submit_queue      chan *types.Block
-	workers           []*Worker
+	reward_address *btcec.PublicKey
+	peers          []string
+	db             *types.DB
+	submit_queue   chan *types.Block
+	workers        []*Worker
 }
 
 func (obj *runner) make_mint() *types.Tx {
