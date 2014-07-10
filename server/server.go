@@ -45,7 +45,7 @@ func SendCommand(peer string, req *Request) (*Response, error) {
 	if err != nil {
 		// log.Println("net.Dial error:", err)
 		// log.Println("Disconnect.")
-		return nil, fmt.Errorf("net.Dial error:", err)
+		return nil, fmt.Errorf("net.Dial error: %v", err)
 	}
 
 	// Write request
@@ -53,7 +53,7 @@ func SendCommand(peer string, req *Request) (*Response, error) {
 	if err := enc.Encode(req); err != nil {
 		// log.Println("json.Marshal error:", err)
 		// log.Println("Disconnect.")
-		return nil, fmt.Errorf("json.Marshal error:", err)
+		return nil, fmt.Errorf("json.Marshal error: %v", err)
 	}
 
 	// Read response back
@@ -62,7 +62,7 @@ func SendCommand(peer string, req *Request) (*Response, error) {
 	if err := dec.Decode(&resp); err != nil {
 		// log.Println("json.Unmarshal error:", err)
 		// log.Println("Disconnect.")
-		return nil, fmt.Errorf("json.Unmarshal error:", err)
+		return nil, fmt.Errorf("json.Unmarshal error: %v", err)
 	}
 
 	return &resp, nil
