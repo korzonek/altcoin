@@ -45,7 +45,7 @@ func RequireWallet(params martini.Params, ren render.Render) {
 func GetSpend(db *types.DB, params martini.Params, ren render.Render) {
 	privkey := params["privkey"]
 	// Get our own public key
-	_, pubkey := tools.ParseKeyPair([]byte(privkey))
+	_, pubkey := tools.ParseKeyPair(privkey)
 
 	// TODO: Calculate our own address every time?
 	addr := tools.MakeAddress([]*btcec.PublicKey{pubkey}, 1)
@@ -140,7 +140,7 @@ func Run(db *types.DB) {
 func spend(db *types.DB, amount int, from string, to string) error {
 	amount = amount * 100000 // or: amount *= 100000
 
-	privkey, pubkey := tools.ParseKeyPair([]byte(from))
+	privkey, pubkey := tools.ParseKeyPair(from)
 	pubkeys := []*btcec.PublicKey{pubkey}
 	addr := tools.MakeAddress(pubkeys, 1)
 

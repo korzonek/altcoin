@@ -25,8 +25,8 @@ func Verify(msg []byte, sig *btcec.Signature, pubkey *btcec.PublicKey) bool {
 	return sig.Verify(h, pubkey)
 }
 
-func ParseKeyPair(b []byte) (*btcec.PrivateKey, *btcec.PublicKey) {
-	return btcec.PrivKeyFromBytes(btcec.S256(), b)
+func ParseKeyPair(privkey string) (*btcec.PrivateKey, *btcec.PublicKey) {
+	return btcec.PrivKeyFromBytes(btcec.S256(), []byte(privkey))
 }
 
 // Deterministically takes hash (defaults to sha256) of dict, list, int, or string.
