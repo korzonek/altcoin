@@ -56,7 +56,12 @@ func Run(db *types.DB, peers []string, reward_address *btcec.PublicKey) {
 		}
 
 		db.SuggestedBlocks = append(db.SuggestedBlocks, solved_block)
-		obj.restart_workers()
+
+		// Restart workers
+		log.Println("Possible solution found, restarting mining workers.")
+		for _, w := range obj.workers {
+			w.Restart <- true
+		}
 	}
 }
 
@@ -110,12 +115,4 @@ func (obj *runner) make_block(prev_block *types.Block, txs []*types.Tx) *types.B
 	}
 	//out = tools.unpackage(tools.package(out))
 	return out
-}
-
-func (obj *runner) restart_workers() {
-	log.Println("Possible solution found, restarting mining workers.")
-	for _, w := range obj.workers {
-		// worker_mailbox.["restart"].set()
-		w.Restart <- true
-	}
 }
