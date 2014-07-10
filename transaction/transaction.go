@@ -11,20 +11,6 @@ import (
 )
 
 func SpendVerify(tx *types.Tx, txs []*types.Tx, db *types.DB) bool {
-	// def sigs_match(sigs, pubs, msg):
-	// 	return all(tools.verify(msg, sig, pub) for sig in sigs for pub in pubs)
-	sigs_match := func(sigs []*btcec.Signature, pubs []*btcec.PublicKey, msg string) bool {
-		m := []byte(msg)
-		for _, sig := range sigs {
-			for _, pub := range pubs {
-				if !tools.Verify(m, sig, pub) {
-					return false
-				}
-			}
-		}
-		return true
-	}
-
 	tx_copy := tx
 	tx_copy_2 := tx
 
@@ -40,7 +26,7 @@ func SpendVerify(tx *types.Tx, txs []*types.Tx, db *types.DB) bool {
 	}
 
 	msg := tools.DetHash(tx_copy)
-	if !sigs_match(tx.Signatures, tx.PubKeys, msg) {
+	if !sigsMatch(tx.Signatures, tx.PubKeys, msg) {
 		return false
 	}
 
@@ -65,6 +51,20 @@ func SpendVerify(tx *types.Tx, txs []*types.Tx, db *types.DB) bool {
 	}
 
 	return db.GetAccount(address).Amount >= total_cost
+}
+
+// def sigs_match(sigs, pubs, msg):
+// 	return all(tools.verify(msg, sig, pub) for sig in sigs for pub in pubs)
+func sigsMatch(sigs []*btcec.Signature, pubs []*btcec.PublicKey, msg string) bool {
+	m := []byte(msg)
+	for _, sig := range sigs {
+		for _, pub := range pubs {
+			if !tools.Verify(m, sig, pub) {
+				return false
+			}
+		}
+	}
+	return true
 }
 
 func MintVerify(tx *types.Tx, txs []*types.Tx, db *types.DB) bool {
