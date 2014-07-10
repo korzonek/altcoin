@@ -44,7 +44,7 @@ type Config struct {
 var DefaultConfig = &Config{
 	CoinName:       "AltCoin",
 	Version:        "VERSION",
-	ListenPort:     8900,
+	ListenPort:     10022,
 	HashesPerCheck: 100000,
 	BlockReward:    100000,
 	Premine:        5000000,
@@ -55,8 +55,8 @@ var DefaultConfig = &Config{
 	MaxDownload:    50000,
 	HistoryLength:  400,
 	UseSSL:         false,
-	GuiPort:        8080,
-	GuiPortSSL:     8443,
+	GuiPort:        10080,
+	GuiPortSSL:     10443,
 	GuiSessionKeyPairs: [][]byte{
 		[]byte("type-in-a-random-string-here"),
 		[]byte("type-in-another-random-string-here"),
