@@ -1,56 +1,47 @@
-basiccoin
+# altcoin
 
-The simplest currency. 
+The simplest crypto-currency ported from Python to Go for readability and type-safety, also for the fun and learn new things.
 
-INSTALL (for ubuntu)
+**DISCLAIMER:** Identifier names (variables and funcs) doesn't *strictly* follow Go styleguide, for example, you may find `var foo_bar` instead of `var fooBar`.
+This would be fixed gradually.
 
-    sudo apt-get install git
-    sudo apt-get install python-leveldb
-    git clone https://github.com/zack-bitcoin/basiccoin.git
-    cd basiccoin/
+## Installation
 
-To run 1 node
+Tested on: **go version go1.3 windows/amd64**, it may work on older versions.
 
-    python threads.py
+It *should work* on all other Go supported OSes.
 
-To quickly run 5 nodes (linux/mac only)
+You can easily install a full node by:
 
-    ./go.sh
+    go get github.com/toqueteos/altcoin/cmd/altcoind
 
-Then send your browser to 
+## Organization
 
-    http://localhost:8701
-    http://localhost:8702
-    http://localhost:8703
-    http://localhost:8704
-    http://localhost:8705
+Everything lives in its own independent sub-package.
 
-###Why do we need a simple currency
+Exceptions to this rule are packages:
 
-At the time of writing this there exist over 80 cryptocurrencies with market caps of over $100,000. According to Andreas Antonopolous, we will soon live in a world with millions of altcoins. It is incredibly risky to try to add new features to an old crypto. There is a high probability that you will introduce a bug. To combat this, each currency will have only one purpose.
-Bitcoin currently has 40445 lines of C++ and assembly, not including gui or tests. Very few people are able to read bitcoin. It is incredibly difficulty to adapt without breaking everything. Because of how hard it is to adapt bitcoin, all the altcoins have been very simplistic. They change magic numbers, and the name, and little else.
+- config.
+- types.
+- tools.
+- templates, not an actual Go package; holds the HTML files requires for webgui.
 
-When things get complicated, it is good to return to the basics.
-The purpose of basiccoin is to be the simplest secure currency possible. Currently about 550 lines of python, and getting smaller. Basiccoin is designed to be easily modified to create new alts.
+## Comparisons to basiccoin
 
-###What are the priorities that shape coding-style?
+I've only worried about understanding how this thing worked and making it readable, [basiccoin's Python codebase](https://github.com/zack-bitcoin/basiccoin) was heavily compressed so its very hard to read (even though its Python).
 
-1)  It should be a secure cryptocurrency.
+It *may contain* critical bugs due to some missunderstanding while porting it.
 
-2)  The part of the code that can change state is kept as small as possible. add_block and delete_block are the only functions that write to the database. The mental-size of a program is largely determined by how many parts of the program can alter the database.
+**Feel free to criticise, send issues or pull requests at any time.**
 
-3)  It should be easy to create altcoins with new features just by adding transactions types to the transactions.py file.
+I'll try to read all those as soon as possible.
 
-4)  Do not allow repetitions in code.
+## Creating a derived coin
 
-5)  Use the name of a function or variable as the main form of commenting. If something is not clear, instead of adding comments, we just subdivide the complex task into smaller tasks, and accurately name those smaller tasks.
+altcoin allows to easily create derived custom coins easily, just as basiccoin's.
 
-6)  Try to maximize number of ideas that fit on a screen at a time.
+Files you may want to check out:
 
-7)  pep8
-
-###nlocktime/spend same transaction twice problem
-
-Example transaction={'type':'spend', 'id':pubkey1, 'to':pubkey2, 'start':1000, 'end':1200, 'count':24, 'signature':hodsnfoubewuwe==/dsnfiosfwf}
-
-This transaction would be considered invalid if it was broadcast before blocklength 1000, or if it was broadcast after blocklength 1200, or if this is not pubkey1's 24th transaction.
+- [config/config.go](https://github.com/toqueteos/altcoin/blob/master/config/config.go), some generic options like Premine, Fees, coin name, etc...
+- [miner/miner.go](https://github.com/toqueteos/altcoin/blob/master/miner/miner.go), how the miner works and how Proof-of-Work is implemented.
+- [server/server.go](https://github.com/toqueteos/altcoin/blob/master/server/server.go) and [server/request.go](https://github.com/toqueteos/altcoin/blob/master/server/request.go) to customize what `<your-coin-name>d` servers can do.
