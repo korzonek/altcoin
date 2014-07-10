@@ -11,9 +11,9 @@ import (
 	"github.com/toqueteos/altcoin/types"
 )
 
-func Run(peers []string, db *types.DB) {
+func Run(db *types.DB, peers []string) {
 	for _ = range time.Tick(1 * time.Second) {
-		CheckPeers(peers, db)
+		CheckPeers(db, peers)
 
 		// Suggestions
 		for _, tx := range db.SuggestedTxs {
@@ -29,8 +29,8 @@ func Run(peers []string, db *types.DB) {
 }
 
 // Check on the peers to see if they know about more blocks than we do.
-func CheckPeers(peers []string, db *types.DB) {
-	obj := &checkPeers{peers, db}
+func CheckPeers(db *types.DB, peers []string) {
+	obj := &checkPeers{db, peers}
 
 	for _, peer := range peers {
 		block_count := obj.cmd(peer, &server.Request{Type: "blockcount"})
@@ -58,8 +58,8 @@ func CheckPeers(peers []string, db *types.DB) {
 }
 
 type checkPeers struct {
-	peers []string
 	db    *types.DB
+	peers []string
 }
 
 func (obj *checkPeers) cmd(peer string, req *server.Request) *server.Response {
