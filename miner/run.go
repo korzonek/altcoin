@@ -72,14 +72,10 @@ func (obj *runner) make_mint() *types.Tx {
 	pubkeys := []*btcec.PublicKey{obj.reward_address}
 	addr := tools.MakeAddress(pubkeys, 1)
 
-	if config.Get().MintSignature == nil {
-		log.Panicln("config.MintSignature is nil")
-	}
-
 	return &types.Tx{
 		Type:       "mint",
 		PubKeys:    pubkeys,
-		Signatures: []*btcec.Signature{config.Get().MintSignature},
+		Signatures: []*btcec.Signature{nil},
 		Count:      blockchain.Count(addr, obj.db),
 	}
 }

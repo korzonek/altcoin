@@ -3,18 +3,10 @@ package config
 import (
 	"crypto/sha256"
 	"fmt"
-	"log"
-
-	"github.com/conformal/btcec"
 )
 
-func Get() *Config { return currentConfig }
-func Set(c *Config) {
-	currentConfig = c
-	if c.MintSignature == nil {
-		log.Fatalln("Signature for mint transactions is required")
-	}
-}
+func Get() *Config  { return currentConfig }
+func Set(c *Config) { currentConfig = c }
 
 var currentConfig *Config = DefaultConfig
 
@@ -28,7 +20,6 @@ type Config struct {
 	BlockReward    int
 	Premine        int
 	Fee            int
-	MintSignature  *btcec.Signature
 
 	Mmm        int     // Lower limits on what the "time" tag in a block can say.
 	Inflection float64 // This constant is selected such that the 50 most recent blocks count for 1/2 the total weight.
@@ -55,7 +46,6 @@ var DefaultConfig = &Config{
 	Version:        "VERSION",
 	ListenPort:     8900,
 	HashesPerCheck: 100000,
-	MintSignature:  nil,
 	BlockReward:    100000,
 	Premine:        5000000,
 	Fee:            1000,
