@@ -1,5 +1,8 @@
 # altcoin
 
+[![GoDoc](https://godoc.org/github.com/toqueteos/altcoin?status.png)]
+(http://godoc.org/github.com/toqueteos/altcoin)
+
 The simplest crypto-currency ported from Python to Go for readability and type-safety, also for the fun and learn new things.
 
 **DISCLAIMER:** Identifier names (variables and funcs) doesn't *strictly* follow Go styleguide, for example, you may find `var foo_bar` instead of `var fooBar`.
