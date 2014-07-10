@@ -13,20 +13,9 @@ import (
 	"github.com/conformal/btcec"
 )
 
-type Work struct {
-	candidate_block   *types.Block
-	hashes_till_check int
-}
-
-type Worker struct {
-	Restart     chan bool
-	SubmitQueue chan *types.Block
-	WorkQueue   chan Work
-}
-
-// Controller spawns worker processes (multi-CPU mining) and coordinates the effort.
-func Controller(reward_address *btcec.PublicKey, peers []types.Peer, hashes_till_check int, db *types.DB) {
-	obj := &controller{
+// Run spawns worker processes (multi-CPU mining) and coordinates the effort.
+func Run(reward_address *btcec.PublicKey, peers []types.Peer, hashes_till_check int, db *types.DB) {
+	obj := &runner{
 		reward_address:    reward_address,
 		peers:             peers,
 		hashes_till_check: hashes_till_check,
@@ -72,7 +61,7 @@ func Controller(reward_address *btcec.PublicKey, peers []types.Peer, hashes_till
 	}
 }
 
-type controller struct {
+type runner struct {
 	reward_address    *btcec.PublicKey
 	peers             []types.Peer
 	hashes_till_check int
@@ -81,7 +70,7 @@ type controller struct {
 	workers           []*Worker
 }
 
-func (obj *controller) make_mint() *types.Tx {
+func (obj *runner) make_mint() *types.Tx {
 	pubkeys := []*btcec.PublicKey{obj.reward_address}
 	addr := tools.MakeAddress(pubkeys, 1)
 	// TODO: `first_sig` should be a `config` var
@@ -99,7 +88,7 @@ func (obj *controller) make_mint() *types.Tx {
 	}
 }
 
-func (obj *controller) genesis() *types.Block {
+func (obj *runner) genesis() *types.Block {
 	target := blockchain.Target(obj.db, 0)
 	block := &types.Block{
 		Version:    config.Get().Version,
@@ -114,7 +103,7 @@ func (obj *controller) genesis() *types.Block {
 	return block
 }
 
-func (obj *controller) make_block(prev_block *types.Block, txs []*types.Tx) *types.Block {
+func (obj *runner) make_block(prev_block *types.Block, txs []*types.Tx) *types.Block {
 	length := prev_block.Length + 1
 	target := blockchain.Target(obj.db, length)
 	diffLength := blockchain.HexSum(prev_block.DiffLength, blockchain.HexInv(target))
@@ -131,7 +120,7 @@ func (obj *controller) make_block(prev_block *types.Block, txs []*types.Tx) *typ
 	return out
 }
 
-func (obj *controller) restart_workers() {
+func (obj *runner) restart_workers() {
 	log.Println("Possible solution found, restarting mining workers.")
 	for _, w := range obj.workers {
 		// worker_mailbox.["restart"].set()
@@ -139,7 +128,7 @@ func (obj *controller) restart_workers() {
 	}
 }
 
-func (obj *controller) spawn_worker() *Worker {
+func (obj *runner) spawn_worker() *Worker {
 	log.Println("Spawning worker")
 
 	w := &Worker{

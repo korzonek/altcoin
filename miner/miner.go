@@ -5,6 +5,17 @@ import (
 	"github.com/toqueteos/altcoin/types"
 )
 
+type Work struct {
+	candidate_block   *types.Block
+	hashes_till_check int
+}
+
+type Worker struct {
+	Restart     chan bool
+	SubmitQueue chan *types.Block
+	WorkQueue   chan Work
+}
+
 func Miner(worker *Worker) {
 	var (
 		block             *types.Block
