@@ -33,18 +33,23 @@ func CheckPeers(db *types.DB, peers []string) {
 	obj := &checkPeers{db, peers}
 
 	for _, peer := range peers {
-		block_count := obj.cmd(peer, &server.Request{Type: "blockcount"})
+		// block_count := obj.cmd(peer, &server.Request{Type: "blockcount"})
+		resp, err := server.SendCommand(peer, &server.Request{Type: "blockcount"})
+		if err != nil {
+			log.Println("[consensus.CheckPeers] blockcount request failed with error:", err)
+			continue
+		}
 
 		// if not isinstance(block_count, dict): return
 		// if "error" in block_count.keys(): return
 
 		length := db.Length
-		size := tools.Max(len(db.DiffLength), len(block_count.DiffLength))
+		size := tools.Max(len(db.DiffLength), len(resp.DiffLength))
 		us := tools.ZerosLeft(db.DiffLength, size)
-		them := tools.ZerosLeft(block_count.DiffLength, size)
+		them := tools.ZerosLeft(resp.DiffLength, size)
 
 		if them < us {
-			obj.give_block(peer, block_count.Length)
+			obj.give_block(peer, resp.Length)
 			continue
 		}
 
@@ -53,22 +58,13 @@ func CheckPeers(db *types.DB, peers []string) {
 			continue
 		}
 
-		obj.download_blocks(peer, block_count.Length, length)
+		obj.download_blocks(peer, resp.Length, length)
 	}
 }
 
 type checkPeers struct {
 	db    *types.DB
 	peers []string
-}
-
-func (obj *checkPeers) cmd(peer string, req *server.Request) *server.Response {
-	resp, err := server.SendCommand(peer, req)
-	if err != nil {
-		log.Println(err)
-		return nil
-	}
-	return resp
 }
 
 func (obj *checkPeers) fork_check(newblocks []*types.Block) bool {
@@ -94,9 +90,9 @@ func (obj *checkPeers) bounds(length int, block_count int) []int {
 }
 
 func (obj *checkPeers) download_blocks(peer string, block_count int, length int) {
-	resp := obj.cmd(peer, &server.Request{Type: "range", Range: obj.bounds(length, block_count)})
-
-	if resp.Blocks == nil {
+	resp, err := server.SendCommand(peer, &server.Request{Type: "range", Range: obj.bounds(length, block_count)})
+	if err != nil || resp.Blocks == nil {
+		log.Println("[consensus.download_blocks] range request failed with error:", err)
 		return
 	}
 
@@ -112,7 +108,11 @@ func (obj *checkPeers) download_blocks(peer string, block_count int, length int)
 }
 
 func (obj *checkPeers) ask_for_txs(peer string) {
-	resp := obj.cmd(peer, &server.Request{Type: "txs"})
+	resp, err := server.SendCommand(peer, &server.Request{Type: "txs"})
+	if err != nil {
+		log.Println("[consensus.ask_for_txs] txs request failed with error:", err)
+		return
+	}
 
 	// DB['suggested_txs'].extend(txs)
 	obj.db.SuggestedTxs = append(obj.db.SuggestedTxs, resp.Txs...)
@@ -122,19 +122,18 @@ func (obj *checkPeers) ask_for_txs(peer string) {
 	var pushers = make(map[*types.Tx]bool)
 	for _, push := range obj.db.Txs {
 		if _, ok := pushers[push]; !ok {
-			obj.cmd(peer, &server.Request{Type: "pushtx", Tx: push})
+			if _, err := server.SendCommand(peer, &server.Request{Type: "pushtx", Tx: push}); err != nil {
+				log.Println("[consensus.ask_for_txs] pushtx request failed with error:", err)
+			}
 			pushers[push] = true
 		}
 	}
-
-	//return []
 }
 
 func (obj *checkPeers) give_block(peer string, block_count int) {
-	obj.cmd(peer, &server.Request{
-		Type:  "pushblock",
-		Block: obj.db.GetBlock(block_count + 1),
-	})
-
-	//return []
+	_, err := server.SendCommand(peer, &server.Request{Type: "pushblock", Block: obj.db.GetBlock(block_count + 1)})
+	if err != nil {
+		log.Println("[consensus.give_block] pushblock request failed with error:", err)
+		return
+	}
 }
