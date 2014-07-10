@@ -43,26 +43,20 @@ func SendCommand(peer string, req *Request) (*Response, error) {
 
 	conn, err := net.Dial("tcp", peer)
 	if err != nil {
-		// log.Println("net.Dial error:", err)
-		// log.Println("Disconnect.")
-		return nil, fmt.Errorf("net.Dial error: %v", err)
+		return nil, fmt.Errorf("[server.SendCommand] net.Dial error: %v", err)
 	}
 
 	// Write request
 	enc := json.NewEncoder(conn)
 	if err := enc.Encode(req); err != nil {
-		// log.Println("json.Marshal error:", err)
-		// log.Println("Disconnect.")
-		return nil, fmt.Errorf("json.Marshal error: %v", err)
+		return nil, fmt.Errorf("[server.SendCommand] json.Marshal error: %v", err)
 	}
 
 	// Read response back
 	dec := json.NewDecoder(conn)
 	var resp Response
 	if err := dec.Decode(&resp); err != nil {
-		// log.Println("json.Unmarshal error:", err)
-		// log.Println("Disconnect.")
-		return nil, fmt.Errorf("json.Unmarshal error: %v", err)
+		return nil, fmt.Errorf("[server.SendCommand] json.Unmarshal error: %v", err)
 	}
 
 	return &resp, nil
@@ -71,14 +65,15 @@ func SendCommand(peer string, req *Request) (*Response, error) {
 func Run(db *types.DB) {
 	ln, err := net.Listen("tcp", fmt.Sprintf("127.0.0.1:%d", config.Get().ListenPort))
 	if err != nil {
-		// handle error
+		log.Fatalln("[server.Run] net.Listen error:", err)
+		return
 	}
 	defer ln.Close()
 
 	for {
 		conn, err := ln.Accept()
 		if err != nil {
-			log.Println("Couldn't accept client. Error:", err)
+			log.Println("[server.Run] Couldn't accept client. Error:", err)
 			continue
 		}
 
