@@ -1,20 +1,26 @@
 package main
 
 import (
-	"crypto/sha512"
 	"fmt"
 	"log"
+	"os"
+	"os/signal"
 
 	"github.com/toqueteos/altcoin/config"
 	"github.com/toqueteos/altcoin/consensus"
 	"github.com/toqueteos/altcoin/gui"
+	"github.com/toqueteos/altcoin/miner"
 	"github.com/toqueteos/altcoin/server"
+	"github.com/toqueteos/altcoin/tools"
 	"github.com/toqueteos/altcoin/types"
 
 	"github.com/syndtr/goleveldb/leveldb"
 )
 
-var DatabaseFile = "AltCoin.db"
+var (
+	DatabaseFile     = "altcoin.db"
+	WalletPassphrase = "my-altcoin-coin-wallet"
+)
 
 func main() {
 	// Create/Open a LevelDB database
@@ -36,25 +42,29 @@ func main() {
 		"localhost:8905",
 	}
 
-	// Let's say we want to change coin name and Hash function.
+	//
+	privkey := tools.DetHashString(WalletPassphrase)
+	_, reward_address := tools.ParseKeyPair(privkey)
+
+	// Let's setup ourselves as an altcoin node...
 	cfg := config.DefaultConfig
-	cfg.CoinName = "AwesomeCoin"
-	// Let global config know about our new Hash function
-	config.Hash = Sha512Hash
+	cfg.Version = "ALCv1.0"
+	config.Set(cfg)
 
-	go consensus.Run(peers, db)
+	// Setup done, now let's init the services and call it a day...
+	go consensus.Run(db, peers)
 	// Listens for peers. Peers might ask us for our blocks and our pool of recent transactions, or peers could suggest blocks and transactions to us.
-	server.Run(db)
+	go server.Run(db)
 	// Keeps track of blockchain database, checks on peers for new blocks and transactions.
-	//miner.Run(db)
+	go miner.Run(db, peers, reward_address)
 	// Browser based GUI.
-	gui.Run(db)
-}
+	go gui.Run(db)
 
-// This is our new Hash function (uses sha512 instead of sha256)
-func Sha512Hash(s string) string {
-	h := sha512.New()
-	h.Write([]byte(s))
-	bs := h.Sum(nil)
-	return fmt.Sprintf("%x", bs)
+	c := make(chan os.Signal, 1)
+	signal.Notify(c, os.Interrupt)
+
+	// Block until a signal is received.
+	<-c
+
+	fmt.Printf("Stopping %s...\n", os.Args[0])
 }
