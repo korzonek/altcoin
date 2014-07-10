@@ -11,11 +11,15 @@ import (
 )
 
 func SpendVerify(tx *types.Tx, txs []*types.Tx, db *types.DB) bool {
+	// def sigs_match(sigs, pubs, msg):
+	// 	return all(tools.verify(msg, sig, pub) for sig in sigs for pub in pubs)
 	sigs_match := func(sigs []*btcec.Signature, pubs []*btcec.PublicKey, msg string) bool {
 		m := []byte(msg)
 		for _, sig := range sigs {
 			for _, pub := range pubs {
-				tools.Verify(m, sig, pub)
+				if !tools.Verify(m, sig, pub) {
+					return false
+				}
 			}
 		}
 		return true
