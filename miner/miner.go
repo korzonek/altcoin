@@ -1,7 +1,9 @@
 package miner
 
 import (
+	"log"
 	"time"
+
 	"github.com/toqueteos/altcoin/types"
 )
 
@@ -14,6 +16,20 @@ type Worker struct {
 	Restart     chan bool
 	SubmitQueue chan *types.Block
 	WorkQueue   chan Work
+}
+
+func NewWorker(submit chan *types.Block) *Worker {
+	log.Println("Spawning worker")
+
+	w := &Worker{
+		Restart:     make(chan bool),
+		SubmitQueue: obj.submit_queue,
+		WorkQueue:   make(chan Work),
+	}
+
+	go Miner(w)
+
+	return w
 }
 
 func Miner(worker *Worker) {

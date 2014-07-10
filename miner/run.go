@@ -26,7 +26,7 @@ func Run(db *types.DB, peers []string, reward_address *btcec.PublicKey) {
 	num_cores := runtime.NumCPU()
 	log.Printf("Creating %d mining workers.", num_cores)
 	for i := 0; i < num_cores; i++ {
-		obj.workers = append(obj.workers, obj.spawn_worker())
+		obj.workers = append(obj.workers, NewWorker(obj.submit_queue))
 	}
 
 	var (
@@ -118,18 +118,4 @@ func (obj *runner) restart_workers() {
 		// worker_mailbox.["restart"].set()
 		w.Restart <- true
 	}
-}
-
-func (obj *runner) spawn_worker() *Worker {
-	log.Println("Spawning worker")
-
-	w := &Worker{
-		Restart:     make(chan bool),
-		SubmitQueue: obj.submit_queue,
-		WorkQueue:   make(chan Work),
-	}
-
-	go Miner(w)
-
-	return w
 }
