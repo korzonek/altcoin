@@ -116,21 +116,20 @@ func Run(db *types.DB) {
 	r.Get("/spend/:privkey", RequireWallet, GetSpend)
 	r.Post("/spend/:privkey", RequireWallet, PostSpend)
 
-	var httpAddr = fmt.Sprintf(":%d", config.Get().GuiPort)
-	var httpsAddr = fmt.Sprintf(":%d", config.Get().GuiPortSSL)
-
-	// HTTP
-	go func() {
+	if !config.Get().UseSSL {
+		// HTTP
+		var httpAddr = fmt.Sprintf(":%d", config.Get().GuiPort)
 		if err := http.ListenAndServe(httpAddr, m); err != nil {
 			log.Fatal(err)
 		}
-	}()
-
-	// HTTPS
-	// To generate a development cert and key, run the following from your *nix terminal:
-	// go run $GOROOT/src/pkg/crypto/tls/generate_cert.go --host="localhost"
-	if err := http.ListenAndServeTLS(httpsAddr, "cert.pem", "key.pem", m); err != nil {
-		log.Fatal(err)
+	} else {
+		// HTTPS
+		// To generate a development cert and key, run the following from your *nix terminal:
+		// go run $GOROOT/src/pkg/crypto/tls/generate_cert.go --host="localhost"
+		var httpsAddr = fmt.Sprintf(":%d", config.Get().GuiPortSSL)
+		if err := http.ListenAndServeTLS(httpsAddr, "cert.pem", "key.pem", m); err != nil {
+			log.Fatal(err)
+		}
 	}
 }
 

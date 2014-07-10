@@ -25,8 +25,9 @@ var DefaultConfig = &Config{
 	DownloadMany:   500,
 	MaxDownload:    50000,
 	HistoryLength:  400,
-	GuiPort:        8700,
-	GuiPortSSL:     8703,
+	UseSSL:         false,
+	GuiPort:        8080,
+	GuiPortSSL:     8443,
 	GuiSessionKeyPairs: [][]byte{
 		[]byte("type-in-a-random-string-here"),
 		[]byte("type-in-another-random-string-here"),
@@ -58,6 +59,7 @@ type Config struct {
 	// Privatekey  string // Hash(Brainwallet)
 	// Publickey   *btcec.PublicKey // _, pub := tools.ParseKeyPair(privkey)
 
+	UseSSL             bool
 	GuiPort            int
 	GuiPortSSL         int
 	GuiSessionKeyPairs [][]byte
