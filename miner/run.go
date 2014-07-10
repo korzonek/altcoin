@@ -14,7 +14,7 @@ import (
 )
 
 // Run spawns worker processes (multi-CPU mining) and coordinates the effort.
-func Run(reward_address *btcec.PublicKey, peers []types.Peer, hashes_till_check int, db *types.DB) {
+func Run(reward_address *btcec.PublicKey, peers []string, hashes_till_check int, db *types.DB) {
 	obj := &runner{
 		reward_address:    reward_address,
 		peers:             peers,
@@ -63,7 +63,7 @@ func Run(reward_address *btcec.PublicKey, peers []types.Peer, hashes_till_check 
 
 type runner struct {
 	reward_address    *btcec.PublicKey
-	peers             []types.Peer
+	peers             []string
 	hashes_till_check int
 	db                *types.DB
 	submit_queue      chan *types.Block

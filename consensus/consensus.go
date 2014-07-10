@@ -11,7 +11,7 @@ import (
 	"github.com/toqueteos/altcoin/types"
 )
 
-func Run(peers []types.Peer, db *types.DB) {
+func Run(peers []string, db *types.DB) {
 	for _ = range time.Tick(1 * time.Second) {
 		CheckPeers(peers, db)
 
@@ -29,7 +29,7 @@ func Run(peers []types.Peer, db *types.DB) {
 }
 
 // Check on the peers to see if they know about more blocks than we do.
-func CheckPeers(peers []types.Peer, db *types.DB) {
+func CheckPeers(peers []string, db *types.DB) {
 	obj := &checkPeers{peers, db}
 
 	for _, peer := range peers {
@@ -58,11 +58,11 @@ func CheckPeers(peers []types.Peer, db *types.DB) {
 }
 
 type checkPeers struct {
-	peers []types.Peer
+	peers []string
 	db    *types.DB
 }
 
-func (obj *checkPeers) cmd(peer types.Peer, req *server.Request) *server.Response {
+func (obj *checkPeers) cmd(peer string, req *server.Request) *server.Response {
 	resp, err := server.SendCommand(peer, req)
 	if err != nil {
 		log.Println(err)
@@ -93,7 +93,7 @@ func (obj *checkPeers) bounds(length int, block_count int) []int {
 	return []int{tools.Max(length-2, 0), end}
 }
 
-func (obj *checkPeers) download_blocks(peer types.Peer, block_count int, length int) {
+func (obj *checkPeers) download_blocks(peer string, block_count int, length int) {
 	resp := obj.cmd(peer, &server.Request{Type: "range", Range: obj.bounds(length, block_count)})
 
 	if resp.Blocks == nil {
@@ -111,7 +111,7 @@ func (obj *checkPeers) download_blocks(peer types.Peer, block_count int, length 
 	obj.db.SuggestedBlocks = append(obj.db.SuggestedBlocks, resp.Blocks...)
 }
 
-func (obj *checkPeers) ask_for_txs(peer types.Peer) {
+func (obj *checkPeers) ask_for_txs(peer string) {
 	resp := obj.cmd(peer, &server.Request{Type: "txs"})
 
 	// DB['suggested_txs'].extend(txs)
@@ -130,7 +130,7 @@ func (obj *checkPeers) ask_for_txs(peer types.Peer) {
 	//return []
 }
 
-func (obj *checkPeers) give_block(peer types.Peer, block_count int) {
+func (obj *checkPeers) give_block(peer string, block_count int) {
 	obj.cmd(peer, &server.Request{
 		Type:  "pushblock",
 		Block: obj.db.GetBlock(block_count + 1),

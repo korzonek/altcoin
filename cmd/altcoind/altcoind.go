@@ -27,12 +27,13 @@ func main() {
 	// It holds a pointer to the LevelDB database among other things.
 	db := types.NewDB(ldb)
 
-	peers := []types.Peer{
-		types.Peer{"localhost", 8901},
-		types.Peer{"localhost", 8902},
-		types.Peer{"localhost", 8903},
-		types.Peer{"localhost", 8904},
-		types.Peer{"localhost", 8905},
+	// List of peers we want to connect
+	peers := []string{
+		"localhost:8901",
+		"localhost:8902",
+		"localhost:8903",
+		"localhost:8904",
+		"localhost:8905",
 	}
 
 	// Let's say we want to change coin name and Hash function.

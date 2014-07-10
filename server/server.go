@@ -36,12 +36,12 @@ var (
 
 const MAX_MESSAGE_SIZE = 65536 // 64kb, instead of 60000
 
-func SendCommand(peer types.Peer, req *Request) (*Response, error) {
+func SendCommand(peer string, req *Request) (*Response, error) {
 	if length := tools.JsonLen(req); length < 1 || length > MAX_MESSAGE_SIZE {
 		return nil, ErrSize
 	}
 
-	conn, err := net.Dial("tcp", fmt.Sprintf("%s:%d", peer.Host, peer.Port))
+	conn, err := net.Dial("tcp", peer)
 	if err != nil {
 		// log.Println("net.Dial error:", err)
 		// log.Println("Disconnect.")
