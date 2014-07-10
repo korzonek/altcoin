@@ -27,8 +27,6 @@ func TestSign(t *testing.T) {
 			log.Fatal(err)
 		}
 
-		Printf("%x", sig)
-
 		// Verify the signature for the message using the public key.
 		So(Verify(msg, sig, pub), ShouldBeTrue)
 	})
