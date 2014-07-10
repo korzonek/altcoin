@@ -65,16 +65,15 @@ func TestVerify(t *testing.T) {
 	})
 }
 
-// type ParseKeyPairTest struct {
-// }
+func TestParseKeyPair(t *testing.T) {
+	h := DetHashString("1")
+	_, pub := ParseKeyPair(h)
+	_, err := btcec.ParsePubKey(pub.SerializeUncompressed(), btcec.S256())
 
-// func TestParseKeyPair(t *testing.T) {
-// 	Convey("Table tests.", t, func() {
-// 		cases := map[string]ParseKeyPairTest{
-// 			"": ParseKeyPairTest{},
-// 		}
-// 	})
-// }
+	Convey("PrivateKey='1'", t, func() {
+		So(err, ShouldBeNil)
+	})
+}
 
 type ZerosLeftTest struct {
 	In   string
