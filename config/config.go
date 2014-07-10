@@ -1,5 +1,3 @@
-// This is for easy customization of new currencies.
-
 package config
 
 import (
@@ -7,7 +5,6 @@ import (
 	"fmt"
 )
 
-var currentConfig *Config
 func init() {
 	Set(DefaultConfig)
 }
@@ -15,27 +12,7 @@ func init() {
 func Get() *Config  { return currentConfig }
 func Set(c *Config) { currentConfig = c }
 
-var DefaultConfig = &Config{
-	CoinName:       "AltCoin",
-	Version:        "VERSION",
-	ListenPort:     8900,
-	HashesPerCheck: 100000,
-	BlockReward:    100000,
-	Premine:        5000000,
-	Fee:            1000,
-	Mmm:            100,
-	Inflection:     0.985,
-	DownloadMany:   500,
-	MaxDownload:    50000,
-	HistoryLength:  400,
-	UseSSL:         false,
-	GuiPort:        8080,
-	GuiPortSSL:     8443,
-	GuiSessionKeyPairs: [][]byte{
-		[]byte("type-in-a-random-string-here"),
-		[]byte("type-in-another-random-string-here"),
-	},
-}
+var currentConfig *Config
 
 type Config struct {
 	CoinName string
@@ -66,6 +43,28 @@ type Config struct {
 	GuiPort            int
 	GuiPortSSL         int
 	GuiSessionKeyPairs [][]byte
+}
+
+var DefaultConfig = &Config{
+	CoinName:       "AltCoin",
+	Version:        "VERSION",
+	ListenPort:     8900,
+	HashesPerCheck: 100000,
+	BlockReward:    100000,
+	Premine:        5000000,
+	Fee:            1000,
+	Mmm:            100,
+	Inflection:     0.985,
+	DownloadMany:   500,
+	MaxDownload:    50000,
+	HistoryLength:  400,
+	UseSSL:         false,
+	GuiPort:        8080,
+	GuiPortSSL:     8443,
+	GuiSessionKeyPairs: [][]byte{
+		[]byte("type-in-a-random-string-here"),
+		[]byte("type-in-another-random-string-here"),
+	},
 }
 
 var Hash = hash
