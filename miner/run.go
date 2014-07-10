@@ -71,17 +71,15 @@ type runner struct {
 func (obj *runner) make_mint() *types.Tx {
 	pubkeys := []*btcec.PublicKey{obj.reward_address}
 	addr := tools.MakeAddress(pubkeys, 1)
-	// TODO: `first_sig` should be a `config` var
-	sign, err := btcec.ParseSignature([]byte("first_sig"), btcec.S256())
-	if err != nil {
-		log.Println("ParseSignature error:", err)
-		return nil
+
+	if config.Get().MintSignature == nil {
+		log.Panicln("config.MintSignature is nil")
 	}
 
 	return &types.Tx{
 		Type:       "mint",
 		PubKeys:    pubkeys,
-		Signatures: []*btcec.Signature{sign},
+		Signatures: []*btcec.Signature{config.Get().MintSignature},
 		Count:      blockchain.Count(addr, obj.db),
 	}
 }
