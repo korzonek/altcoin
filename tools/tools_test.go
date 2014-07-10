@@ -210,6 +210,9 @@ func TestJsonLen(t *testing.T) {
 		"Project's name",
 		"world in chinese (unicode)",
 		"Float number",
+		"Error: channels",
+		"Error: func",
+		"Error: complex",
 	}
 
 	cases := []JsonLenTest{
@@ -217,6 +220,9 @@ func TestJsonLen(t *testing.T) {
 		JsonLenTest{"altcoin", 9},
 		JsonLenTest{"世界", 8},
 		JsonLenTest{3.16, 4},
+		JsonLenTest{make(chan int), -1},
+		JsonLenTest{func() {}, -1},
+		JsonLenTest{2 + 3i, -1},
 	}
 
 	for index, test := range cases {
