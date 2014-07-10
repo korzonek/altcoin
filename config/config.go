@@ -8,6 +8,9 @@ import (
 )
 
 var currentConfig *Config
+func init() {
+	Set(DefaultConfig)
+}
 
 func Get() *Config  { return currentConfig }
 func Set(c *Config) { currentConfig = c }
