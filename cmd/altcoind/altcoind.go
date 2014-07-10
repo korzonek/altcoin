@@ -23,10 +23,12 @@ var (
 )
 
 func main() {
+	logger := log.New(os.Stdout, "[altcoind] ", log.Ldate|log.Ltime)
+
 	// Create/Open a LevelDB database
 	ldb, err := leveldb.OpenFile(DatabaseFile, nil)
 	if err != nil {
-		log.Fatalf("Couldn't open %q\n", DatabaseFile)
+		logger.Fatalf("Couldn't open %q\n", DatabaseFile)
 	}
 
 	// Create a *types.DB instance, this struct is passed around almost everywhere.
