@@ -5,7 +5,7 @@
 
 The simplest crypto-currency ported from Python to Go for readability and type-safety, also for the fun and learn new things.
 
-**DISCLAIMER:** Identifier names (variables and funcs) doesn't *strictly* follow Go styleguide, for example, you may find `var foo_bar` instead of `var fooBar`.
+**DISCLAIMER:** Identifier names (variables and funcs) don't *strictly* follow Go styleguide, for example, you may find `var foo_bar` instead of `var fooBar`.
 This would be fixed gradually.
 
 ## Installation
@@ -45,6 +45,6 @@ altcoin allows to easily create derived custom coins easily, just as basiccoin's
 
 Files you may want to check out:
 
-- [config/config.go](https://github.com/toqueteos/altcoin/blob/master/config/config.go), some generic options like Premine, Fees, coin name, etc...
-- [miner/miner.go](https://github.com/toqueteos/altcoin/blob/master/miner/miner.go), how the miner works and how Proof-of-Work is implemented.
+- [config/config.go](https://github.com/toqueteos/altcoin/blob/master/config/config.go), some generic options like premine, fees, coin name, etc...
+- [miner/miner.go](https://github.com/toqueteos/altcoin/blob/master/miner/miner.go) and [miner/pow.go](https://github.com/toqueteos/altcoin/blob/master/miner/pow.go), how the miner works and how Proof-of-Work is implemented.
 - [server/server.go](https://github.com/toqueteos/altcoin/blob/master/server/server.go) and [server/request.go](https://github.com/toqueteos/altcoin/blob/master/server/request.go) to customize what `<your-coin-name>d` servers can do.
