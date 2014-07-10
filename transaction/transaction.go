@@ -12,9 +12,10 @@ import (
 
 func SpendVerify(tx *types.Tx, txs []*types.Tx, db *types.DB) bool {
 	sigs_match := func(sigs []*btcec.Signature, pubs []*btcec.PublicKey, msg string) bool {
+		m := []byte(msg)
 		for _, sig := range sigs {
 			for _, pub := range pubs {
-				tools.Verify([]byte(msg), sig, pub)
+				tools.Verify(m, sig, pub)
 			}
 		}
 		return true
