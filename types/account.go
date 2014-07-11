@@ -6,8 +6,8 @@ import (
 )
 
 type Account struct {
-	Amount int `json:"amount,omitempty`
-	Count  int `json:"count,omitempty`
+	Amount int `json:"amount,omitempty"`
+	Count  int `json:"count,omitempty"`
 }
 
 func (acc *Account) Json() string {
