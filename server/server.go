@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"log"
 	"net"
+	"os"
 
 	"github.com/toqueteos/altcoin/config"
 	"github.com/toqueteos/altcoin/tools"
@@ -15,6 +16,8 @@ import (
 
 var (
 	ErrSize = errors.New("Wrong sized message")
+
+	logger = log.New(os.Stdout, "[server] ", log.Ldate|log.Ltime|log.Lshortfile)
 
 	funcs = map[string]func(*Request, *types.DB) *Response{
 		"BlockCount":   BlockCount,
@@ -65,7 +68,7 @@ func SendCommand(peer string, req *Request) (*Response, error) {
 func Run(db *types.DB) {
 	ln, err := net.Listen("tcp", fmt.Sprintf("127.0.0.1:%d", config.Get().ListenPort))
 	if err != nil {
-		log.Fatalln("[server.Run] net.Listen error:", err)
+		logger.Fatalln("net.Listen error:", err)
 		return
 	}
 	defer ln.Close()
@@ -73,7 +76,7 @@ func Run(db *types.DB) {
 	for {
 		conn, err := ln.Accept()
 		if err != nil {
-			log.Println("[server.Run] Couldn't accept client. Error:", err)
+			logger.Println("Couldn't accept client. Error:", err)
 			continue
 		}
 
@@ -86,18 +89,18 @@ func Main(conn net.Conn, db *types.DB) {
 	dec := json.NewDecoder(conn)
 	err := dec.Decode(&req)
 	if err != nil {
-		log.Println("Couldn't decode request. Error:", err)
+		logger.Println("Couldn't decode request. Error:", err)
 		return
 	}
 
 	call := req.Type
 	if tools.NotIn(call, apiCalls) {
-		log.Printf("[API Error] Unknown service: %q\n", call)
+		logger.Printf("Unknown service: %q\n", call)
 	}
 
 	resp := SecurityCheck(&req)
 	if !resp.Secure || resp.Error != "ok" {
-		log.Printf("SecurityCheck:", resp.Error)
+		logger.Println("SecurityCheck:", resp.Error)
 		return
 	}
 
