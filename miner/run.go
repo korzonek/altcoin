@@ -25,7 +25,6 @@ func Run(db *types.DB, peers []string, reward_address *btcec.PublicKey) {
 		submit_queue:   make(chan *types.Block),
 	}
 
-	// num_cores = multiprocessing.cpu_count()
 	num_cores := runtime.NumCPU()
 	logger.Printf("Creating %d mining workers...", num_cores)
 	for i := 0; i < num_cores; i++ {
@@ -53,7 +52,6 @@ func Run(db *types.DB, peers []string, reward_address *btcec.PublicKey) {
 		}
 
 		// When block found, add to suggested blocks.
-		// solved_block = submitted_blocks.get() # TODO(roasbeef): size=1?
 		solved_block := <-obj.submit_queue
 		if solved_block.Length != length+1 {
 			continue
@@ -94,13 +92,12 @@ func (obj *runner) genesis() *types.Block {
 	block := &types.Block{
 		Version:    config.Get().Version,
 		Length:     0,
-		Time:       time.Now(), // time.time(),
+		Time:       time.Now(),
 		Target:     target,
 		DiffLength: blockchain.HexInv(target),
 		Txs:        []*types.Tx{obj.make_mint()},
 	}
 	logger.Println("Genesis Block:", block)
-	//block = tools.unpackage(tools.package(block))
 	return block
 }
 
@@ -112,11 +109,10 @@ func (obj *runner) make_block(prev_block *types.Block, txs []*types.Tx) *types.B
 		Version:    config.Get().Version,
 		Txs:        append(txs, obj.make_mint()),
 		Length:     length,
-		Time:       time.Now(), // time.time(),
+		Time:       time.Now(),
 		DiffLength: diffLength,
 		Target:     target,
 		PrevHash:   tools.DetHash(prev_block),
 	}
-	//out = tools.unpackage(tools.package(out))
 	return out
 }
