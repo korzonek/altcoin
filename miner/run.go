@@ -2,6 +2,7 @@ package miner
 
 import (
 	"log"
+	"os"
 	"runtime"
 	"time"
 
@@ -12,6 +13,8 @@ import (
 
 	"github.com/conformal/btcec"
 )
+
+var logger = log.New(os.Stdout, "[miner] ", log.Ldate|log.Ltime|log.Lshortfile)
 
 // Run spawns worker processes (multi-CPU mining) and coordinates the effort.
 func Run(db *types.DB, peers []string, reward_address *btcec.PublicKey) {
@@ -24,9 +27,10 @@ func Run(db *types.DB, peers []string, reward_address *btcec.PublicKey) {
 
 	// num_cores = multiprocessing.cpu_count()
 	num_cores := runtime.NumCPU()
-	log.Printf("Creating %d mining workers.", num_cores)
+	logger.Printf("Creating %d mining workers...", num_cores)
 	for i := 0; i < num_cores; i++ {
 		obj.workers = append(obj.workers, NewWorker(obj.submit_queue))
+		logger.Printf("Spawning worker %d...", i)
 	}
 
 	var (
@@ -58,7 +62,7 @@ func Run(db *types.DB, peers []string, reward_address *btcec.PublicKey) {
 		db.SuggestedBlocks = append(db.SuggestedBlocks, solved_block)
 
 		// Restart workers
-		log.Println("Possible solution found, restarting mining workers.")
+		logger.Println("Possible solution found, restarting mining workers.")
 		for _, w := range obj.workers {
 			w.Restart <- true
 		}
@@ -95,7 +99,7 @@ func (obj *runner) genesis() *types.Block {
 		DiffLength: blockchain.HexInv(target),
 		Txs:        []*types.Tx{obj.make_mint()},
 	}
-	log.Println("Genesis Block:", block)
+	logger.Println("Genesis Block:", block)
 	//block = tools.unpackage(tools.package(block))
 	return block
 }
