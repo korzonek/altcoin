@@ -18,14 +18,14 @@ import (
 )
 
 var (
-	transaction_keys = []string{"mint", "spend"}
+	transactionKeys = []string{"mint", "spend"}
 
-	transaction_update = map[string]func(*types.Tx, *types.DB){
+	transactionUpdate = map[string]func(*types.Tx, *types.DB){
 		"mint":  transaction.Mint,
 		"spend": transaction.Spend,
 	}
 
-	transaction_verify = map[string]func(*types.Tx, []*types.Tx, *types.DB) bool{
+	transactionVerify = map[string]func(*types.Tx, []*types.Tx, *types.DB) bool{
 		"mint":  transaction.MintVerify,
 		"spend": transaction.SpendVerify,
 	}
@@ -115,7 +115,7 @@ func Target(db *types.DB, length int) string {
 	// We are actually interested in the average number of hashes required to mine a block.
 	// Number of hashes required is inversely proportional to target.
 	// So we average over inverse-targets, and inverse the final answer.
-	estimate_target := func(db *types.DB) string {
+	estimateTarget := func(db *types.DB) string {
 		sumTargets := func(ls []string) string {
 			if len(ls) < 1 {
 				return "0" // must be string, int on python version
@@ -145,19 +145,19 @@ func Target(db *types.DB, length int) string {
 			targets = append(targets, HexInv(t))
 		}
 
-		weighted_multiply := func(i int) string {
+		weightedMultiply := func(i int) string {
 			return HexMul(targets[i], strconv.Itoa(int(w[i]/tw)))
 		}
 
-		var weighted_targets []string
+		var weightedTargets []string
 		for i := 0; i < len(targets); i++ {
-			weighted_targets = append(weighted_targets, weighted_multiply(i))
+			weightedTargets = append(weightedTargets, weightedMultiply(i))
 		}
 
-		return HexInv(sumTargets(weighted_targets))
+		return HexInv(sumTargets(weightedTargets))
 	}
 
-	estimate_time := func(db *types.DB) float64 {
+	estimateTime := func(db *types.DB) float64 {
 		times := RecentBlockTimes(db, config.Get().HistoryLength, 0)
 
 		var lengths []float64
@@ -189,35 +189,35 @@ func Target(db *types.DB, length int) string {
 		return sum
 	}
 
-	block_time := config.BlockTime(length)
-	retarget := estimate_time(db) / float64(block_time)
-	return HexMul(estimate_target(db), strconv.Itoa(int(retarget)))
+	blockTime := config.BlockTime(length)
+	retarget := estimateTime(db) / float64(blockTime)
+	return HexMul(estimateTarget(db), strconv.Itoa(int(retarget)))
 }
 
 // Attempts adding a new block to the blockchain.
 func AddBlock(block *types.Block, db *types.DB) {
-	tx_check := func(txs []*types.Tx) bool {
+	txCheck := func(txs []*types.Tx) bool {
 		// start = copy.deepcopy(txs)
 		var start = txs
-		var txs_source []*types.Tx
-		var start_copy []*types.Tx
+		var txsSource []*types.Tx
+		var startCopy []*types.Tx
 
-		for !reflect.DeepEqual(start, start_copy) {
+		for !reflect.DeepEqual(start, startCopy) {
 			// Block passes this test
 			if start == nil {
 				return false
 			}
 
-			// start_copy = copy.deepcopy(start)
-			start_copy = start
+			// startCopy = copy.deepcopy(start)
+			startCopy = start
 			last := start[len(start)-1]
 
 			// transactions.tx_check[start[-1]['type']](start[-1], out, DB)
-			fn := transaction_verify[last.Type]
-			if fn(last, txs_source, db) {
+			fn := transactionVerify[last.Type]
+			if fn(last, txsSource, db) {
 				// start.pop()
 				start = start[:len(start)-1]
-				txs_source = append(txs_source, last)
+				txsSource = append(txsSource, last)
 			} else {
 				// Block is invalid
 				return true
@@ -255,20 +255,20 @@ func AddBlock(block *types.Block, db *types.DB) {
 
 	// a = copy.deepcopy(block)
 	// a.pop("nonce")
-	block_copy := block
-	block_copy.Nonce = nil
+	blockCopy := block
+	blockCopy.Nonce = nil
 
 	//if "target" not in block.keys(): return False
 	if block.Target == "" {
 		return
 	}
 
-	half_way := &types.HalfWay{
+	halfWay := &types.HalfWay{
 		Nonce:    block.Nonce,
-		HalfHash: tools.DetHash(block_copy),
+		HalfHash: tools.DetHash(blockCopy),
 	}
 
-	if tools.DetHash(half_way) > block.Target {
+	if tools.DetHash(halfWay) > block.Target {
 		return
 	}
 
@@ -277,9 +277,9 @@ func AddBlock(block *types.Block, db *types.DB) {
 	}
 
 	// TODO: Figure out why 8 (length)?
-	earliest_median := median(RecentBlockTimes(db, config.Get().Mmm, 8))
+	earliestMedian := median(RecentBlockTimes(db, config.Get().Mmm, 8))
 	// `float64` (unix epoch) back to `time.Time`
-	sec, nsec := math.Modf(earliest_median)
+	sec, nsec := math.Modf(earliestMedian)
 	earliest := time.Unix(int64(sec), int64(nsec*1e9))
 
 	// if block.Time > time.time(): return false
@@ -288,7 +288,7 @@ func AddBlock(block *types.Block, db *types.DB) {
 		return
 	}
 
-	if tx_check(block.Txs) {
+	if txCheck(block.Txs) {
 		return
 	}
 
@@ -307,7 +307,7 @@ func AddBlock(block *types.Block, db *types.DB) {
 
 	for _, tx := range block.Txs {
 		db.AddBlock = true
-		fn := transaction_update[tx.Type]
+		fn := transactionUpdate[tx.Type]
 		fn(tx, db)
 	}
 
@@ -340,12 +340,12 @@ func DeleteBlock(db *types.DB) {
 	for _, tx := range block.Txs {
 		orphans = append(orphans, tx)
 		db.AddBlock = false
-		fn := transaction_update[tx.Type]
+		fn := transactionUpdate[tx.Type]
 		fn(tx, db)
 	}
 
 	db.Delete(strconv.Itoa(db.Length))
-	db.Length -= 1
+	db.Length--
 
 	if db.Length == -1 {
 		db.DiffLength = "0"

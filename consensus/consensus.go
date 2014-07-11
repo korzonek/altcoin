@@ -33,7 +33,7 @@ func CheckPeers(db *types.DB, peers []string) {
 	obj := &checkPeers{db, peers}
 
 	for _, peer := range peers {
-		// block_count := obj.cmd(peer, &server.Request{Type: "blockcount"})
+		// blockCount := obj.cmd(peer, &server.Request{Type: "blockcount"})
 		resp, err := server.SendCommand(peer, &server.Request{Type: "blockcount"})
 		if err != nil {
 			log.Println("[consensus.CheckPeers] blockcount request failed with error:", err)
@@ -49,16 +49,16 @@ func CheckPeers(db *types.DB, peers []string) {
 		them := tools.ZerosLeft(resp.DiffLength, size)
 
 		if them < us {
-			obj.give_block(peer, resp.Length)
+			obj.giveBlock(peer, resp.Length)
 			continue
 		}
 
 		if us == them {
-			obj.ask_for_txs(peer)
+			obj.askForTxs(peer)
 			continue
 		}
 
-		obj.download_blocks(peer, resp.Length, length)
+		obj.downloadBlocks(peer, resp.Length, length)
 	}
 }
 
@@ -67,38 +67,38 @@ type checkPeers struct {
 	peers []string
 }
 
-func (obj *checkPeers) fork_check(newblocks []*types.Block) bool {
+func (obj *checkPeers) forkCheck(newblocks []*types.Block) bool {
 	block := obj.db.GetBlock(obj.db.Length)
-	recent_hash := tools.DetHash(block)
 	//their_hashes = map(tools.DetHash, newblocks)
-	var their_hashes []string
+	recentHash := tools.DetHash(block)
+	var theirHashes []string
 	for _, b := range newblocks {
-		their_hashes = append(their_hashes, tools.DetHash(b))
+		theirHashes = append(theirHashes, tools.DetHash(b))
 	}
 	//return recent_hash not in their_hashes
-	return tools.NotIn(recent_hash, their_hashes)
+	return tools.NotIn(recentHash, theirHashes)
 }
 
-func (obj *checkPeers) bounds(length int, block_count int) []int {
+func (obj *checkPeers) bounds(length int, blockCount int) []int {
 	var end int
-	if block_count-length > config.Get().DownloadMany {
+	if blockCount-length > config.Get().DownloadMany {
 		end = length + config.Get().DownloadMany - 1
 	} else {
-		end = block_count
+		end = blockCount
 	}
 	return []int{tools.Max(length-2, 0), end}
 }
 
-func (obj *checkPeers) download_blocks(peer string, block_count int, length int) {
-	resp, err := server.SendCommand(peer, &server.Request{Type: "range", Range: obj.bounds(length, block_count)})
+func (obj *checkPeers) downloadBlocks(peer string, blockCount int, length int) {
+	resp, err := server.SendCommand(peer, &server.Request{Type: "range", Range: obj.bounds(length, blockCount)})
 	if err != nil || resp.Blocks == nil {
-		log.Println("[consensus.download_blocks] range request failed with error:", err)
+		log.Println("[consensus.downloadBlocks] range request failed with error:", err)
 		return
 	}
 
 	// Only delete a max of 2 blocks, otherwise a peer might trick us into deleting everything over and over.
 	for i := 0; i < 2; i++ {
-		if obj.fork_check(resp.Blocks) {
+		if obj.forkCheck(resp.Blocks) {
 			blockchain.DeleteBlock(obj.db)
 		}
 	}
@@ -107,10 +107,10 @@ func (obj *checkPeers) download_blocks(peer string, block_count int, length int)
 	obj.db.SuggestedBlocks = append(obj.db.SuggestedBlocks, resp.Blocks...)
 }
 
-func (obj *checkPeers) ask_for_txs(peer string) {
+func (obj *checkPeers) askForTxs(peer string) {
 	resp, err := server.SendCommand(peer, &server.Request{Type: "txs"})
 	if err != nil {
-		log.Println("[consensus.ask_for_txs] txs request failed with error:", err)
+		log.Println("[consensus.askForTxs] txs request failed with error:", err)
 		return
 	}
 
@@ -123,17 +123,17 @@ func (obj *checkPeers) ask_for_txs(peer string) {
 	for _, push := range obj.db.Txs {
 		if _, ok := pushers[push]; !ok {
 			if _, err := server.SendCommand(peer, &server.Request{Type: "pushtx", Tx: push}); err != nil {
-				log.Println("[consensus.ask_for_txs] pushtx request failed with error:", err)
+				log.Println("[consensus.askForTxs] pushtx request failed with error:", err)
 			}
 			pushers[push] = true
 		}
 	}
 }
 
-func (obj *checkPeers) give_block(peer string, block_count int) {
-	_, err := server.SendCommand(peer, &server.Request{Type: "pushblock", Block: obj.db.GetBlock(block_count + 1)})
+func (obj *checkPeers) giveBlock(peer string, blockCount int) {
+	_, err := server.SendCommand(peer, &server.Request{Type: "pushblock", Block: obj.db.GetBlock(blockCount + 1)})
 	if err != nil {
-		log.Println("[consensus.give_block] pushblock request failed with error:", err)
+		log.Println("[consensus.giveBlock] pushblock request failed with error:", err)
 		return
 	}
 }

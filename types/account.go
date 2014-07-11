@@ -10,7 +10,7 @@ type Account struct {
 	Count  int `json:"count,omitempty"`
 }
 
-func (acc *Account) Json() string {
+func (acc *Account) JSON() string {
 	var buf bytes.Buffer
 	enc := json.NewEncoder(&buf)
 	enc.Encode(acc)

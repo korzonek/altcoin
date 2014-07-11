@@ -11,13 +11,13 @@ func Count(addr string, db *types.DB) int {
 	// 	def is_zero_conf(t):
 	// 		return address == tools.make_address(t['pubkeys'], len(t['signatures']))
 	// return len(filter(is_zero_conf, DB['txs']))
-	var zeroth_confirmation_txs int
+	var zerothConfirmationTxs int
 	for _, t := range db.Txs {
 		if addr == tools.MakeAddress(t.PubKeys, len(t.Signatures)) {
-			zeroth_confirmation_txs++
+			zerothConfirmationTxs++
 		}
 	}
 
 	current := db.GetAccount(addr)
-	return current.Count + zeroth_confirmation_txs
+	return current.Count + zerothConfirmationTxs
 }

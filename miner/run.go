@@ -43,7 +43,7 @@ func Run(db *types.DB, peers []string, rewardAddr *btcec.PublicKey) {
 			block = obj.genesis()
 		} else {
 			prevBlock := db.GetBlock(length)
-			block = obj.make_block(prevBlock, db.Txs)
+			block = obj.makeBlock(prevBlock, db.Txs)
 		}
 
 		work := Work{
@@ -78,7 +78,7 @@ type runner struct {
 	workers    []*Worker
 }
 
-func (obj *runner) make_mint() *types.Tx {
+func (obj *runner) makeMint() *types.Tx {
 	pubkeys := []*btcec.PublicKey{obj.rewardAddr}
 	addr := tools.MakeAddress(pubkeys, 1)
 
@@ -98,19 +98,19 @@ func (obj *runner) genesis() *types.Block {
 		Time:       time.Now(),
 		Target:     target,
 		DiffLength: blockchain.HexInv(target),
-		Txs:        []*types.Tx{obj.make_mint()},
+		Txs:        []*types.Tx{obj.makeMint()},
 	}
 	logger.Println("Genesis Block:", block)
 	return block
 }
 
-func (obj *runner) make_block(prevBlock *types.Block, txs []*types.Tx) *types.Block {
+func (obj *runner) makeBlock(prevBlock *types.Block, txs []*types.Tx) *types.Block {
 	length := prevBlock.Length + 1
 	target := blockchain.Target(obj.db, length)
 	diffLength := blockchain.HexSum(prevBlock.DiffLength, blockchain.HexInv(target))
 	out := &types.Block{
 		Version:    config.Get().Version,
-		Txs:        append(txs, obj.make_mint()),
+		Txs:        append(txs, obj.makeMint()),
 		Length:     length,
 		Time:       time.Now(),
 		DiffLength: diffLength,

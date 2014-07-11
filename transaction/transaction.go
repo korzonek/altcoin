@@ -11,11 +11,11 @@ import (
 )
 
 func SpendVerify(tx *types.Tx, txs []*types.Tx, db *types.DB) bool {
-	tx_copy := tx
-	tx_copy_2 := tx
+	txCopy := tx
+	txCopy2 := tx
 
 	// tx_copy.pop("signatures")
-	tx_copy.Signatures = nil
+	txCopy.Signatures = nil
 
 	if len(tx.PubKeys) == 0 {
 		return false
@@ -25,7 +25,7 @@ func SpendVerify(tx *types.Tx, txs []*types.Tx, db *types.DB) bool {
 		return false
 	}
 
-	msg := tools.DetHash(tx_copy)
+	msg := tools.DetHash(txCopy)
 	if !sigsMatch(tx.Signatures, tx.PubKeys, msg) {
 		return false
 	}
@@ -34,8 +34,8 @@ func SpendVerify(tx *types.Tx, txs []*types.Tx, db *types.DB) bool {
 		return false
 	}
 
-	address := addr(tx_copy_2)
-	total_cost := 0
+	address := addr(txCopy2)
+	totalCost := 0
 
 	//for Tx in filter(lambda t: address == addr(t), [tx] + txs) {
 	for _, t := range append(txs, tx) {
@@ -43,14 +43,14 @@ func SpendVerify(tx *types.Tx, txs []*types.Tx, db *types.DB) bool {
 			continue
 		}
 		if t.Type == "spend" {
-			total_cost += t.Amount
+			totalCost += t.Amount
 		}
 		if t.Type == "mint" {
-			total_cost -= config.Get().BlockReward
+			totalCost -= config.Get().BlockReward
 		}
 	}
 
-	return db.GetAccount(address).Amount >= total_cost
+	return db.GetAccount(address).Amount >= totalCost
 }
 
 // def sigs_match(sigs, pubs, msg):

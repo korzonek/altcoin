@@ -5,5 +5,5 @@ type Hasher interface {
 }
 
 type Serializer interface {
-	Json() string
+	JSON() string
 }

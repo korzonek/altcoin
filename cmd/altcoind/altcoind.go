@@ -46,7 +46,7 @@ func main() {
 
 	//
 	privkey := tools.DetHashString(WalletPassphrase)
-	_, reward_address := tools.ParseKeyPair(privkey)
+	_, rewardAddress := tools.ParseKeyPair(privkey)
 
 	// Let's setup ourselves as an altcoin node...
 	cfg := config.DefaultConfig
@@ -58,7 +58,7 @@ func main() {
 	// Listens for peers. Peers might ask us for our blocks and our pool of recent transactions, or peers could suggest blocks and transactions to us.
 	go server.Run(db)
 	// Keeps track of blockchain database, checks on peers for new blocks and transactions.
-	go miner.Run(db, peers, reward_address)
+	go miner.Run(db, peers, rewardAddress)
 	// Browser based GUI.
 	go gui.Run(db)
 

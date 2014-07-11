@@ -14,6 +14,8 @@ import (
 	"github.com/toqueteos/altcoin/types"
 )
 
+const MaxMessageSize = 65536 // 64kb, instead of 60000
+
 var (
 	ErrSize = errors.New("Wrong sized message")
 
@@ -37,10 +39,8 @@ var (
 	}
 )
 
-const MAX_MESSAGE_SIZE = 65536 // 64kb, instead of 60000
-
 func SendCommand(peer string, req *Request) (*Response, error) {
-	if length := tools.JsonLen(req); length < 1 || length > MAX_MESSAGE_SIZE {
+	if length := tools.JSONLen(req); length < 1 || length > MaxMessageSize {
 		return nil, ErrSize
 	}
 

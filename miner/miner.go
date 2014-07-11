@@ -59,13 +59,13 @@ func Miner(worker *Worker) {
 			}
 		}
 
-		solution_found, err := PoW(block, hashesPerCheck, worker.Restart)
+		solutionFound, err := PoW(block, hashesPerCheck, worker.Restart)
 
 		switch {
 		// We hit the hash ceiling.
 		case err != nil:
 		// Another worker found the block.
-		case solution_found:
+		case solutionFound:
 			// Empty out the signal queue.
 			needNewWork = true
 		// Block found!

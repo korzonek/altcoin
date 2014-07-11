@@ -89,7 +89,7 @@ func (db *DB) GetAccount(addr string) *Account {
 
 func (db *DB) Put(k string, v Serializer) error {
 	key := []byte(k)
-	value := []byte(v.Json())
+	value := []byte(v.JSON())
 	return db.Storage.Put(key, value, nil)
 }
 

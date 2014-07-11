@@ -38,17 +38,15 @@ type Response struct {
 func SecurityCheck(req *Request) *Response {
 	if req.Version == "" || req.Version != config.Get().Version {
 		return &Response{Secure: false, Error: "version"}
-	} else {
-		return &Response{Secure: true, Error: "ok"}
 	}
+	return &Response{Secure: true, Error: "ok"}
 }
 
 func BlockCount(req *Request, db *types.DB) *Response {
 	if db.Length >= 0 {
 		return &Response{Length: db.Length, RecentHash: db.RecentHash, DiffLength: db.DiffLength}
-	} else {
-		return &Response{Length: -1, RecentHash: 0, DiffLength: "0"}
 	}
+	return &Response{Length: -1, RecentHash: 0, DiffLength: "0"}
 }
 
 func RangeRequest(req *Request, db *types.DB) *Response {
@@ -57,7 +55,7 @@ func RangeRequest(req *Request, db *types.DB) *Response {
 		counter int
 	)
 
-	for tools.JsonLen(resp) < config.Get().MaxDownload && req.Range[0]+counter <= req.Range[1] {
+	for tools.JSONLen(resp) < config.Get().MaxDownload && req.Range[0]+counter <= req.Range[1] {
 		block := db.GetBlock(req.Range[0] + counter)
 		// if "length" in block: out.append(block)
 		resp.Blocks = append(resp.Blocks, block)

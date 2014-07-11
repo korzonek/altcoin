@@ -42,7 +42,7 @@ func DetHashString(h string) string { return config.Hash(h) }
 
 // n is the number of pubkeys required to spend from this address.
 func MakeAddress(pubkeys []*btcec.PublicKey, n int) string {
-	addr := &types.Address{n, pubkeys}
+	addr := &types.Address{N: n, PubKeys: pubkeys}
 	h := DetHash(addr)
 	b58 := btcutil.Base58Encode([]byte(h))
 	return fmt.Sprintf("%d%d%x", len(pubkeys), n, b58[:29])
@@ -53,9 +53,8 @@ func ZerosLeft(s string, size int) string {
 	if qty > 0 {
 		zeros := strings.Repeat("0", qty)
 		return zeros + s
-	} else {
-		return s
 	}
+	return s
 }
 
 func In(s string, cases []string) bool {
@@ -71,7 +70,7 @@ func NotIn(s string, ss []string) bool {
 	return !In(s, ss)
 }
 
-func JsonLen(value interface{}) int {
+func JSONLen(value interface{}) int {
 	var buf bytes.Buffer
 	enc := json.NewEncoder(&buf)
 	err := enc.Encode(value)
@@ -87,7 +86,6 @@ func JsonLen(value interface{}) int {
 func Max(a, b int) int {
 	if a < b {
 		return b
-	} else {
-		return a
 	}
+	return a
 }

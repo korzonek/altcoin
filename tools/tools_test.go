@@ -197,12 +197,12 @@ func TestNotIn(t *testing.T) {
 	}
 }
 
-type JsonLenTest struct {
+type JSONLenTest struct {
 	In  interface{}
 	Out int
 }
 
-func TestJsonLen(t *testing.T) {
+func TestJSONLen(t *testing.T) {
 	desc := []string{
 		"Empty string",
 		"Project's name",
@@ -213,19 +213,19 @@ func TestJsonLen(t *testing.T) {
 		"Error: complex",
 	}
 
-	cases := []JsonLenTest{
-		JsonLenTest{"", 2},
-		JsonLenTest{"altcoin", 9},
-		JsonLenTest{"世界", 8},
-		JsonLenTest{3.16, 4},
-		JsonLenTest{make(chan int), -1},
-		JsonLenTest{func() {}, -1},
-		JsonLenTest{2 + 3i, -1},
+	cases := []JSONLenTest{
+		JSONLenTest{"", 2},
+		JSONLenTest{"altcoin", 9},
+		JSONLenTest{"世界", 8},
+		JSONLenTest{3.16, 4},
+		JSONLenTest{make(chan int), -1},
+		JSONLenTest{func() {}, -1},
+		JSONLenTest{2 + 3i, -1},
 	}
 
 	for index, test := range cases {
 		Convey(desc[index], t, func() {
-			So(JsonLen(test.In), ShouldEqual, test.Out)
+			So(JSONLen(test.In), ShouldEqual, test.Out)
 		})
 	}
 }

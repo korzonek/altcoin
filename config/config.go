@@ -8,7 +8,7 @@ import (
 func Get() *Config  { return currentConfig }
 func Set(c *Config) { currentConfig = c }
 
-var currentConfig *Config = DefaultConfig
+var currentConfig = DefaultConfig
 
 type Config struct {
 	CoinName string
@@ -77,7 +77,6 @@ func hash(s string) string {
 func blockTime(length int) int {
 	if length*Get().BlockReward < Get().Premine {
 		return 30 // seconds
-	} else {
-		return 60
 	}
+	return 60
 }

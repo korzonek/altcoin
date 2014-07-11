@@ -20,10 +20,10 @@ type Block struct {
 }
 
 func (b *Block) Hash() string {
-	return b.Json()
+	return b.JSON()
 }
 
-func (b *Block) Json() string {
+func (b *Block) JSON() string {
 	var buf bytes.Buffer
 	enc := json.NewEncoder(&buf)
 	enc.Encode(b)
