@@ -68,5 +68,5 @@ func main() {
 	// Block until a signal is received.
 	<-c
 
-	fmt.Printf("Stopping %s...\n", os.Args[0])
+	fmt.Println("Stopping altcoind...")
 }
