@@ -7,8 +7,8 @@ import (
 )
 
 type Work struct {
-	candidate_block   *types.Block
-	hashes_till_check int
+	block          *types.Block
+	hashesPerCheck int
 }
 
 type Worker struct {
@@ -31,10 +31,10 @@ func NewWorker(submit chan *types.Block) *Worker {
 
 func Miner(worker *Worker) {
 	var (
-		block             *types.Block
-		hashes_till_check int
+		block          *types.Block
+		hashesPerCheck int
 		// need_new_work = false
-		need_new_work bool
+		needNewWork bool
 	)
 
 	for {
@@ -48,18 +48,18 @@ func Miner(worker *Worker) {
 		// except Empty:
 		//     need_new_work = False
 		//     continue
-		if need_new_work || block == nil {
+		if needNewWork || block == nil {
 			select {
 			case work := <-worker.WorkQueue:
-				block, hashes_till_check = work.candidate_block, work.hashes_till_check
-				need_new_work = false
+				block, hashesPerCheck = work.block, work.hashesPerCheck
+				needNewWork = false
 			case <-time.After(1 * time.Second):
-				need_new_work = false
+				needNewWork = false
 				continue
 			}
 		}
 
-		solution_found, err := PoW(block, hashes_till_check, worker.Restart)
+		solution_found, err := PoW(block, hashesPerCheck, worker.Restart)
 
 		switch {
 		// We hit the hash ceiling.
@@ -67,11 +67,11 @@ func Miner(worker *Worker) {
 		// Another worker found the block.
 		case solution_found:
 			// Empty out the signal queue.
-			need_new_work = true
+			needNewWork = true
 		// Block found!
 		default:
 			worker.SubmitQueue <- block
-			need_new_work = true
+			needNewWork = true
 		}
 	}
 }

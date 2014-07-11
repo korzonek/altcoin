@@ -17,47 +17,50 @@ import (
 var logger = log.New(os.Stdout, "[miner] ", log.Ldate|log.Ltime|log.Lshortfile)
 
 // Run spawns worker processes (multi-CPU mining) and coordinates the effort.
-func Run(db *types.DB, peers []string, reward_address *btcec.PublicKey) {
+func Run(db *types.DB, peers []string, rewardAddr *btcec.PublicKey) {
 	obj := &runner{
-		db:             db,
-		peers:          peers,
-		reward_address: reward_address,
-		submit_queue:   make(chan *types.Block),
+		db:         db,
+		peers:      peers,
+		rewardAddr: rewardAddr,
+		submitCh:   make(chan *types.Block),
 	}
 
-	num_cores := runtime.NumCPU()
-	logger.Printf("Creating %d mining workers...", num_cores)
-	for i := 0; i < num_cores; i++ {
-		obj.workers = append(obj.workers, NewWorker(obj.submit_queue))
+	cpus := runtime.NumCPU()
+	logger.Printf("Creating %d mining workers...", cpus)
+	for i := 0; i < cpus; i++ {
+		obj.workers = append(obj.workers, NewWorker(obj.submitCh))
 		logger.Printf("Spawning worker %d...", i)
 	}
 
 	var (
-		candidate_block *types.Block
-		length          int
+		block  *types.Block
+		length int
 	)
 
 	for {
 		length = db.Length
 		if length == -1 {
-			candidate_block = obj.genesis()
+			block = obj.genesis()
 		} else {
-			prev_block := db.GetBlock(length)
-			candidate_block = obj.make_block(prev_block, db.Txs)
+			prevBlock := db.GetBlock(length)
+			block = obj.make_block(prevBlock, db.Txs)
 		}
 
-		work := Work{candidate_block, config.Get().HashesPerCheck}
+		work := Work{
+			block:          block,
+			hashesPerCheck: config.Get().HashesPerCheck,
+		}
 		for _, w := range obj.workers {
 			w.WorkQueue <- work
 		}
 
 		// When block found, add to suggested blocks.
-		solved_block := <-obj.submit_queue
-		if solved_block.Length != length+1 {
+		solvedBlock := <-obj.submitCh
+		if solvedBlock.Length != length+1 {
 			continue
 		}
 
-		db.SuggestedBlocks = append(db.SuggestedBlocks, solved_block)
+		db.SuggestedBlocks = append(db.SuggestedBlocks, solvedBlock)
 
 		// Restart workers
 		logger.Println("Possible solution found, restarting mining workers.")
@@ -68,15 +71,15 @@ func Run(db *types.DB, peers []string, reward_address *btcec.PublicKey) {
 }
 
 type runner struct {
-	db             *types.DB
-	peers          []string
-	reward_address *btcec.PublicKey
-	submit_queue   chan *types.Block
-	workers        []*Worker
+	db         *types.DB
+	peers      []string
+	rewardAddr *btcec.PublicKey
+	submitCh   chan *types.Block
+	workers    []*Worker
 }
 
 func (obj *runner) make_mint() *types.Tx {
-	pubkeys := []*btcec.PublicKey{obj.reward_address}
+	pubkeys := []*btcec.PublicKey{obj.rewardAddr}
 	addr := tools.MakeAddress(pubkeys, 1)
 
 	return &types.Tx{
@@ -101,10 +104,10 @@ func (obj *runner) genesis() *types.Block {
 	return block
 }
 
-func (obj *runner) make_block(prev_block *types.Block, txs []*types.Tx) *types.Block {
-	length := prev_block.Length + 1
+func (obj *runner) make_block(prevBlock *types.Block, txs []*types.Tx) *types.Block {
+	length := prevBlock.Length + 1
 	target := blockchain.Target(obj.db, length)
-	diffLength := blockchain.HexSum(prev_block.DiffLength, blockchain.HexInv(target))
+	diffLength := blockchain.HexSum(prevBlock.DiffLength, blockchain.HexInv(target))
 	out := &types.Block{
 		Version:    config.Get().Version,
 		Txs:        append(txs, obj.make_mint()),
@@ -112,7 +115,7 @@ func (obj *runner) make_block(prev_block *types.Block, txs []*types.Tx) *types.B
 		Time:       time.Now(),
 		DiffLength: diffLength,
 		Target:     target,
-		PrevHash:   tools.DetHash(prev_block),
+		PrevHash:   tools.DetHash(prevBlock),
 	}
 	return out
 }
