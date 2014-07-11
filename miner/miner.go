@@ -23,7 +23,7 @@ func NewWorker(submit chan *types.Block) *Worker {
 
 	w := &Worker{
 		Restart:     make(chan bool),
-		SubmitQueue: obj.submit_queue,
+		SubmitQueue: submit,
 		WorkQueue:   make(chan Work),
 	}
 
