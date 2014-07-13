@@ -12,7 +12,7 @@ import (
 )
 
 func Run(db *types.DB, peers []string) {
-	for _ = range time.Tick(1 * time.Second) {
+	for _ = range time.Tick(config.Get().CheckPeersEvery) {
 		CheckPeers(db, peers)
 
 		// Suggestions
