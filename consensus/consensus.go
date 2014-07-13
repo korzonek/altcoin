@@ -33,7 +33,6 @@ func CheckPeers(db *types.DB, peers []string) {
 	obj := &checkPeers{db, peers}
 
 	for _, peer := range peers {
-		// blockCount := obj.cmd(peer, &server.Request{Type: "blockcount"})
 		resp, err := server.SendCommand(peer, &server.Request{Type: "blockcount"})
 		if err != nil {
 			log.Println("[consensus.CheckPeers] blockcount request failed with error:", err)
