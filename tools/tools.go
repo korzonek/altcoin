@@ -10,8 +10,8 @@ import (
 	"github.com/toqueteos/altcoin/config"
 	"github.com/toqueteos/altcoin/types"
 
+	"github.com/btcsuite/btcutil/base58"
 	"github.com/conformal/btcec"
-	"github.com/conformal/btcutil"
 	"github.com/conformal/btcwire"
 )
 
@@ -44,7 +44,7 @@ func DetHashString(h string) string { return config.Hash(h) }
 func MakeAddress(pubkeys []*btcec.PublicKey, n int) string {
 	addr := &types.Address{N: n, PubKeys: pubkeys}
 	h := DetHash(addr)
-	b58 := btcutil.Base58Encode([]byte(h))
+	b58 := base58.Encode([]byte(h))
 	return fmt.Sprintf("%d%d%x", len(pubkeys), n, b58[:29])
 }
 
