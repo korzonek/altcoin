@@ -1,7 +1,7 @@
 # altcoin
 
 [![GoDoc](https://godoc.org/github.com/toqueteos/altcoin?status.png)]
-(http://godoc.org/github.com/toqueteos/altcoin)
+(http://godoc.org/github.com/toqueteos/altcoin)[![codebeat](https://codebeat.co/badges/a7b74900-1bbc-439b-a523-24215742994d)](https://codebeat.co/projects/github-com-toqueteos-altcoin)
 
 The simplest crypto-currency ported from Python to Go for readability and type-safety, also for the fun and learn new things.
 
